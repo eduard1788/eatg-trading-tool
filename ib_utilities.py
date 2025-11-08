@@ -14,24 +14,29 @@ class IBKRApiConn:
         self.client_id = accounts[user]['client_id'][0]
 
     def ib_connect(self):
-        if self.ib.isConnected():
+        if not self.ib.isConnected():
+            try:
+                print(f"Connecting for user: {self.user}")
+                self.ib.connect(
+                    '127.0.0.1',
+                    self.conn_port,
+                    self.client_id
+                )
+                # self.ib.run() ---> This stalls the program
+                print(f"Connected successfully for account(s): {self.account}")
+            except Exception as error:
+                print(f"Error while trying to connect. Error: {error}")
+        else:
             print("You are already connected")
-
-        print(f"Connecting for user: {self.user}")
-        self.ib.connect(
-            '127.0.0.1',
-            self.conn_port,
-            self.client_id
-        )
-        # self.ib.run() ---> This stalls the program
-
-        print(f"Connected successfully for account(s): {self.account}")
 
     def ib_disconnect(self):
         if self.ib.isConnected():
-            print("Disconnecting...")
-            self.ib.disconnect()
-            print(f"Disconnected successfully for account(s): {self.account}")
+            try:
+                print(f"Disconnecting for user: {self.user}")
+                self.ib.disconnect()
+                print(f"Disconnected successfully for account(s): {self.account}")
+            except Exception as error:
+                print(f"Error while trying to disconnect. Error: {error}")
         else:
             print("You are already disconnected")
 

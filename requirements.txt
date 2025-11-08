@@ -2,3 +2,8 @@ ib_insync
 asyncio
 pandas
 openpyxl
+lxml
+xmltodict
+customtkinter
+yfinance
+requests
