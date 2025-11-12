@@ -7,3 +7,4 @@ xmltodict
 customtkinter
 yfinance
 requests
+xlsxwriter

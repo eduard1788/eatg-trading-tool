@@ -3,23 +3,25 @@ import customtkinter
 from ib_utilities import IBKRApiConn
 from account_info import GetInfo
 from finn_info import FinnInfo
-from common import f_type, sheet_list, columns_to_delete
+from common import f_type, sheet_list, columns_to_delete, convert_numeric
+from datetime import datetime
 
-
+"""
 #######################################
 ###### Search symbol information ######
 #######################################
-#client_info = GetInfo()
-#finn = FinnInfo(client_info)
-#finn.fetch_stock_info()
-
+client_info = GetInfo()
+finn = FinnInfo(client_info)
+finn.fetch_stock_info()
+"""
 
 ###############################
 #### Connect to IB Gateway ####
 ###############################
 
-user = customtkinter.CTkInputDialog(text="Please input your name in lowercase:", title="Who are you?")
+user = customtkinter.CTkInputDialog(text="Please input your name:", title="Who are you?")
 user = user.get_input()
+user = user.strip().lower()
 client = IBKRApiConn(user)
 print(f"This is your user: {client.user}")
 print(f"These are your associated accounts: {client.account}")
@@ -38,7 +40,7 @@ client.ib_connect()
 ############################################################
 
 client_info = GetInfo()
-sheets = client_info.define_sheets_to_update_from_local_path (client_info.request_path_to_user("Select the file path", f_type["excel"]), sheet_list)
+sheets = client_info.define_sheets_to_update_from_local_path (client_info.request_path_to_user("Select the file to update", f_type["excel"]), sheet_list)
 print(f"Files to update:")
 for key, values in sheets.items():
     print(key)
@@ -52,11 +54,13 @@ cleaned_sheets = client_info.drop_calculated_fields(sheets, columns_to_delete)
 ###############################
 
 # 1 Get Summary sheet
-input(f"{user}, Searching for summary... Input anything to continue...")
+# input(f"{user}, Searching for summary... Input anything to continue...")
+print(f"{user}, Searching for summary...")
 summary = client_info.get_summary_df(client.ib, client.account)
 
 # 2 Get Trades sheet
-input(f"{user}, Searching for trading history... Input anything to continue...")
+# input(f"{user}, Searching for trading history... Input anything to continue...")
+print(f"{user}, Searching for trading history...")
 log_path = client_info.request_path_to_user("Select trading log", f_type["xml"])
 print(f"Path value: {log_path}")
 trades, records = client_info.get_trading_log(log_path)
@@ -71,11 +75,13 @@ final_trades = client_info.concatenate_dataframes(historic_trades, trades)
 final_trades = client_info.add_trading_number(final_trades)
 
 # 3 Get Active Orders sheet
-input(f"{user} Searching for active orders. Input anything to continue...")
+# input(f"{user} Searching for active orders. Input anything to continue...")
+print(f"{user} Searching for active orders...")
 orders = client_info.fetch_active_orders(client.ib, client.account)
 
 # 4 Get Positions sheet
-input(f"{user} Searching for positions. Input anything to continue...")
+# input(f"{user} Searching for positions. Input anything to continue...")
+print(f"{user} Searching for positions...")
 positions = client_info.get_positions(client.ib, client.account)
 
 # To DO
@@ -88,7 +94,8 @@ api_information = {
 }
 
 # 5 Update the dataframes orders, positions and summary
-input(f"{user} Updating summary, orders and  positions dataframes. Input anything to continue...")
+# input(f"{user} Updating summary, orders and  positions dataframes. Input anything to continue...")
+print(f"{user} Updating summary, orders and  positions dataframes...")
 orders, positions = client_info.calculate_risk_exposure(api_information)
 orders = client_info.mark_parent_child_orders(orders)
 summary = client_info.calculate_unrealized_summary(summary, positions)
@@ -100,8 +107,20 @@ api_information = {
     'Positions': positions
 }
 
-# 6 Print the dictionaries
+# 6 Create dictionary to print
+results = client_info.concatenate_dataframes_from_dict(cleaned_sheets, api_information, skip_key='Stock Activity')
+saving_path = client_info.request_saving_path_to_user(user)
+print(f"Selected path to save: {saving_path}")
 
+# convert all numeric fields
+print(type(columns_to_numeric))
+for df_name, cols_list in convert_numeric.items():
+    df = client_info.convert_columns_to_numeric(results[df_name], columns_to_numeric[df_name])
+    results[df_name] = df
+
+client_info.save_dict_to_excel(results, saving_path)
+
+"""
 # New data
 for sheet, df in api_information.items():
     print(f"Saved file: {sheet} in C:/0.Repositories/")
@@ -111,7 +130,7 @@ for sheet, df in api_information.items():
 for sheet, df in cleaned_sheets.items():
     print(f"Saved file: To be updated {sheet} in C:/0.Repositories/")
     df.to_excel('C:/0.Repositories/' + 'To be updated ' + sheet + '.xlsx' , index = False)
-
+"""
 
 
 

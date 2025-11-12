@@ -16,5 +16,13 @@ columns_to_delete = {
     "Positions": []
 }
 
+# Columns to convert to numeric
+convert_numeric = {
+    "Summary": ['Net Liquidation', 'Cash Balance', 'Realized PnL', 'Unrealized PnL (manual)', 'Market Value (Equity)', 'Market Value (Cash)'],
+    "Stock Activity": ['orderID', 'OrderQty', 'OrderPrice', 'FilledQty', 'AvgFillPrice', 'FillAmount', 'TotalCommission', 'cumulative_position', 'trade_number'],
+    "Active Orders": ['Order ID', 'Quantity', 'Lmt Price', 'Aux Price', 'Total Liq Amount', 'parentId', 'ocaGroup', 'relation_key', 'relation_side'],
+    "Positions": ['Average Cost', 'Current Price', 'Market Value', 'Unrealized PnL', 'Realized PnL', 'Cost', 'Total Liq Amount', 'Capital Exposure']
+}
+
 # API access key
 API_KEY = "lU5mQZlgCeQr20UvOvPNHNASZbjGfbhz"

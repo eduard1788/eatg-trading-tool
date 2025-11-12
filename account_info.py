@@ -44,6 +44,16 @@ class GetInfo:
                                                 filetypes=file_type)
         return file_path
 
+    def request_saving_path_to_user (self,user):
+        default_filename = f"{user}_trading_report_v4_{datetime.now().strftime('%Y%m%d')}.xlsx"
+        save_path = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Excel files", "*.xlsx")],
+            title="Save Excel File As",
+            initialfile=default_filename
+        )
+        return save_path
+
     def define_sheets_to_update_from_local_path (self, path, sheet_list):
         try:
             load_sheets = pd.read_excel(path, sheet_name=sheet_list, dtype=str)
@@ -505,6 +515,28 @@ class GetInfo:
         df = pd.concat([dataframe_1, dataframe_2], ignore_index=True).drop_duplicates()
         return df
 
+    def concatenate_dataframes_from_dict(self, dict_old_vals, dict_new_vals, skip_key=None):
+        result = {}
+        for key in dict_new_vals.keys():
+            if key == skip_key:
+                # Use dict2's dataframe directly (no concatenation)
+                result[key] = dict_new_vals[key]
+            else:
+                # Concatenate corresponding dataframes
+                if key in dict_old_vals:
+                    result[key] = pd.concat([dict_old_vals[key], dict_new_vals[key]], ignore_index=True)
+                else:
+                    # If not in dict1, take dict2 version
+                    result[key] = dict_new_vals[key]
+        return result
+
+    def save_dict_to_excel(self, df_dict, file_name="output.xlsx"):
+        # Create an Excel writer
+        with pd.ExcelWriter(file_name, engine="openpyxl") as writer:
+            for sheet_name, df in df_dict.items():
+                # Each key becomes a sheet name, each value (DataFrame) a sheet
+                df.to_excel(writer, sheet_name=sheet_name[:31], index=False)
+        print(f"✅ Excel file '{file_name}' successfully created.")
 
 #client = GetInfo()
 # TESTING request_path_to_user
